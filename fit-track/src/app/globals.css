@@ -14,7 +14,6 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
@@ -26,4 +25,13 @@ body {
 }
 ::placeholder {
   color: #0000005e;
+}
+.bg-black {
+  background-color: transparent !important;
+}
+a {
+  cursor: pointer;
+}
+button {
+  cursor: pointer;
 }
