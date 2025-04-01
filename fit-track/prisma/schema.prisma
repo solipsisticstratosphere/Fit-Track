@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  hashedPassword String
+  name           String?
+  imageUrl       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  meals          Meal[]
+  weightEntries  Weight[]
+  workouts       Workout[]
+}
+
+model Workout {
+  id        String     @id @default(uuid())
+  name      String
+  date      DateTime
+  notes     String?
+  duration  Int?
+  userId    String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  exercises Exercise[]
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Exercise {
+  id        String   @id @default(uuid())
+  name      String
+  sets      Int
+  reps      Int
+  weight    Float?
+  notes     String?
+  workoutId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  workout   Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@index([workoutId])
+}
+
+model Meal {
+  id        String   @id @default(uuid())
+  name      String
+  calories  Int?
+  protein   Float?
+  carbs     Float?
+  fat       Float?
+  date      DateTime
+  imageUrl  String?
+  notes     String?
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Weight {
+  id        String   @id @default(uuid())
+  weight    Float
+  date      DateTime @default(now())
+  notes     String?
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
