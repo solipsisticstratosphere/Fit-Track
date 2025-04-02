@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { Exercise } from "@prisma/client";
 
 // GET /api/workouts - Get workouts with optional filtering
 export async function GET(req: NextRequest) {
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
   const limit = limitParam ? parseInt(limitParam) : undefined;
 
   try {
-    const whereClause: Record<string, any> = {
+    const whereClause: { userId: string; date?: { gte?: Date; lte?: Date } } = {
       userId: session.user.id,
     };
 
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
         userId: session.user.id,
         exercises: {
           create:
-            body.exercises?.map((exercise: any) => ({
+            body.exercises?.map((exercise: Exercise) => ({
               name: exercise.name,
               sets: exercise.sets,
               reps: exercise.reps,

@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const limit = limitParam ? parseInt(limitParam) : undefined;
 
   try {
-    const whereClause: Record<string, any> = {
+    const whereClause: { userId: string; date?: { gte?: Date; lte?: Date } } = {
       userId: session.user.id,
     };
 

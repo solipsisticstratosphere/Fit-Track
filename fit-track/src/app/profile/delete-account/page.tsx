@@ -143,7 +143,7 @@ export default function DeleteAccountPage() {
                 htmlFor="confirmText"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Type "DELETE MY ACCOUNT" to confirm
+                Type &quot;DELETE MY ACCOUNT&quot; to confirm
               </label>
               <input
                 type="text"
