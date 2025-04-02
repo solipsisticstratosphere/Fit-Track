@@ -71,7 +71,7 @@ export default function Modal({
 
       <div
         ref={modalRef}
-        className={`relative bg-white rounded-lg shadow-lg w-full ${sizeClasses[size]} z-10 overflow-hidden`}
+        className={`relative bg-white rounded-lg shadow-lg w-full ${sizeClasses[size]} z-10 overflow-auto max-h-[99vh]`}
       >
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex justify-between items-center">

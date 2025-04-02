@@ -147,7 +147,6 @@ export default function DashboardPage() {
 
   const fetchWorkoutStats = async () => {
     try {
-      // Calculate date range based on timeframe
       const now = new Date();
       let startDate;
 

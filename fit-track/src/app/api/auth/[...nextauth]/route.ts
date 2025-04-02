@@ -64,7 +64,7 @@ const handler = NextAuth({
             id: user.id,
             email: user.email,
             name: user.name,
-            image: user.imageUrl,
+            imageUrl: user.imageUrl,
           };
         } catch (error) {
           console.error("Authentication error:", error);

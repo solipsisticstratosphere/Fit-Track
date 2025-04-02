@@ -309,7 +309,7 @@ export default function WorkoutsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-gray-50">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 ">
       <div className="md:flex md:items-center md:justify-between mb-8">
         <div className="flex-1 min-w-0">
           <h2 className="text-3xl font-bold leading-7 text-gray-900 sm:text-4xl sm:truncate flex items-center">
@@ -659,8 +659,11 @@ export default function WorkoutsPage() {
           title="New Workout"
           size="2xl"
         >
-          <form onSubmit={handleSubmitNewWorkout} className="space-y-8">
-            <div className="bg-white overflow-hidden rounded-lg p-6 border border-gray-100">
+          <form
+            onSubmit={handleSubmitNewWorkout}
+            className="space-y-8 overflow-auto"
+          >
+            <div className="overflow-auto bg-white rounded-lg p-6 border border-gray-100 ">
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <div className="sm:col-span-3">
                   <label
@@ -676,7 +679,7 @@ export default function WorkoutsPage() {
                       value={workoutName}
                       onChange={(e) => setWorkoutName(e.target.value)}
                       required
-                      className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
+                      className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg p-2"
                       placeholder="Push Day, Leg Day, etc."
                     />
                   </div>
@@ -714,7 +717,7 @@ export default function WorkoutsPage() {
                       id="workout-duration"
                       value={workoutDuration}
                       onChange={(e) => setWorkoutDuration(e.target.value)}
-                      className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
+                      className="p-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
                       placeholder="60"
                     />
                   </div>
@@ -733,7 +736,7 @@ export default function WorkoutsPage() {
                       rows={3}
                       value={workoutNotes}
                       onChange={(e) => setWorkoutNotes(e.target.value)}
-                      className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
+                      className="p-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
                       placeholder="Any notes about this workout..."
                     />
                   </div>
@@ -797,7 +800,7 @@ export default function WorkoutsPage() {
                               )
                             }
                             required
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
+                            className="p-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
                             placeholder="Bench Press, Squat, etc."
                           />
                         </div>
@@ -824,7 +827,7 @@ export default function WorkoutsPage() {
                             }
                             required
                             min="1"
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
+                            className="p-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
                           />
                         </div>
                       </div>
@@ -850,7 +853,7 @@ export default function WorkoutsPage() {
                             }
                             required
                             min="1"
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
+                            className="p-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
                           />
                         </div>
                       </div>
@@ -876,7 +879,7 @@ export default function WorkoutsPage() {
                             }
                             step="0.5"
                             min="0"
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
+                            className="p-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
                           />
                         </div>
                       </div>
@@ -900,7 +903,7 @@ export default function WorkoutsPage() {
                               )
                             }
                             rows={2}
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
+                            className="p-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-lg"
                             placeholder="Any notes about this exercise..."
                           />
                         </div>

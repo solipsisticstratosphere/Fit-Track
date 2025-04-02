@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Menu, X, User } from "lucide-react";
+import Image from "next/image";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -75,14 +76,27 @@ const Navbar = () => {
           <div className="flex items-center">
             {session ? (
               <div className="hidden md:flex items-center gap-4">
-                <div className="flex items-center gap-2 bg-indigo-800/30 px-3 py-1.5 rounded-full">
-                  <div className="h-7 w-7 rounded-full bg-indigo-200 flex items-center justify-center">
-                    <User className="h-4 w-4 text-indigo-700" />
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 bg-indigo-800/30 px-3 py-1.5 rounded-full hover:bg-indigo-800/50 transition-colors duration-200"
+                  aria-label="View profile"
+                  tabIndex={0}
+                >
+                  <div className="h-7 w-7 rounded-full bg-indigo-200 flex items-center justify-center overflow-hidden">
+                    {session.user?.imageUrl ? (
+                      <Image
+                        src={session.user.imageUrl}
+                        alt="Profile"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-4 w-4 text-indigo-700" />
+                    )}
                   </div>
                   <span className="text-indigo-100 text-sm font-medium">
                     {session.user?.name || session.user?.email}
                   </span>
-                </div>
+                </Link>
                 <button
                   onClick={handleSignOut}
                   onKeyDown={handleKeyDown}
@@ -159,9 +173,19 @@ const Navbar = () => {
 
           {session ? (
             <div className="pt-4 pb-3 border-t border-indigo-700">
-              <div className="flex items-center px-3">
-                <div className="h-9 w-9 rounded-full bg-indigo-200 flex items-center justify-center">
-                  <User className="h-5 w-5 text-indigo-700" />
+              <Link href="/profile" className="flex items-center px-3">
+                <div className="h-9 w-9 rounded-full bg-indigo-200 flex items-center justify-center overflow-hidden">
+                  {session.user?.imageUrl ? (
+                    <Image
+                      src={session.user.imageUrl}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                      width={36}
+                      height={36}
+                    />
+                  ) : (
+                    <User className="h-5 w-5 text-indigo-700" />
+                  )}
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-white">
@@ -171,7 +195,7 @@ const Navbar = () => {
                     {session.user?.email || ""}
                   </div>
                 </div>
-              </div>
+              </Link>
               <div className="mt-3 px-2">
                 <button
                   onClick={handleSignOut}

@@ -35,3 +35,10 @@ a {
 button {
   cursor: pointer;
 }
+input,
+textarea {
+  color: #171717;
+}
+textarea {
+  resize: none;
+}

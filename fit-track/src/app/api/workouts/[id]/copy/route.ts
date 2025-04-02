@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { v4 as uuidv4 } from "uuid";
 
 export async function POST(
   req: NextRequest,
@@ -38,12 +39,13 @@ export async function POST(
     const newWorkout = await prisma.workout.create({
       data: {
         name: `${originalWorkout.name} (Copy)`,
-        date: new Date().toISOString(),
+        date: new Date(),
         duration: originalWorkout.duration,
         notes: originalWorkout.notes,
         userId: session.user.id,
         exercises: {
           create: originalWorkout.exercises.map((exercise) => ({
+            id: uuidv4(),
             name: exercise.name,
             sets: exercise.sets,
             reps: exercise.reps,
