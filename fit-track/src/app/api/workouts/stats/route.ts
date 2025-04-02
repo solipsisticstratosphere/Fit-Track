@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const to = url.searchParams.get("to");
 
   try {
-    const whereClause: any = {
+    const whereClause: { userId: string; date?: { gte?: Date; lte?: Date } } = {
       userId: session.user.id,
     };
 
