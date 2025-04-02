@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { Session } from "next-auth";
+
+interface AuthSession extends Session {
+  user: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+}
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as AuthSession | null;
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -18,21 +28,38 @@ export async function GET(req: NextRequest) {
   const to = url.searchParams.get("to");
 
   try {
+    const fromDate = from ? new Date(from) : null;
+    const toDate = to ? new Date(to) : null;
+
+    if (from && isNaN(fromDate?.getTime() || 0)) {
+      return NextResponse.json(
+        { error: "Invalid 'from' date parameter" },
+        { status: 400 }
+      );
+    }
+
+    if (to && isNaN(toDate?.getTime() || 0)) {
+      return NextResponse.json(
+        { error: "Invalid 'to' date parameter" },
+        { status: 400 }
+      );
+    }
+
     const whereClause: { userId: string; date?: { gte?: Date; lte?: Date } } = {
       userId: session.user.id,
     };
 
-    if (from) {
+    if (fromDate) {
       whereClause.date = {
         ...whereClause.date,
-        gte: new Date(from),
+        gte: fromDate,
       };
     }
 
-    if (to) {
+    if (toDate) {
       whereClause.date = {
         ...whereClause.date,
-        lte: new Date(to),
+        lte: toDate,
       };
     }
 
@@ -58,20 +85,37 @@ export async function GET(req: NextRequest) {
           )
         : 0;
 
-    const exerciseStats = await prisma.$queryRaw`
+    let query = `
       SELECT e."name", 
              AVG(e."weight") as "avgWeight", 
              MAX(e."weight") as "maxWeight", 
              AVG(e."reps") as "avgReps"
       FROM "Exercise" e
       JOIN "Workout" w ON e."workoutId" = w."id"
-      WHERE w."userId" = ${session.user.id}
-        ${from ? `AND w."date" >= ${new Date(from)}` : ""}
-        ${to ? `AND w."date" <= ${new Date(to)}` : ""}
+      WHERE w."userId" = $1
+    `;
+
+    const queryParams: (string | Date)[] = [session.user.id];
+    let paramIndex = 2;
+
+    if (fromDate) {
+      query += ` AND w."date" >= $${paramIndex}`;
+      queryParams.push(fromDate);
+      paramIndex++;
+    }
+
+    if (toDate) {
+      query += ` AND w."date" <= $${paramIndex}`;
+      queryParams.push(toDate);
+    }
+
+    query += `
       GROUP BY e."name"
       ORDER BY "maxWeight" DESC
       LIMIT 5
     `;
+
+    const exerciseStats = await prisma.$queryRawUnsafe(query, ...queryParams);
 
     return NextResponse.json({
       count,

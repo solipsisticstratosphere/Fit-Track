@@ -83,11 +83,13 @@ const Navbar = () => {
                   tabIndex={0}
                 >
                   <div className="h-7 w-7 rounded-full bg-indigo-200 flex items-center justify-center overflow-hidden">
-                    {session.user?.imageUrl ? (
+                    {session.user?.image ? (
                       <Image
-                        src={session.user.imageUrl}
+                        src={session.user.image}
                         alt="Profile"
                         className="h-full w-full object-cover"
+                        width={28}
+                        height={28}
                       />
                     ) : (
                       <User className="h-4 w-4 text-indigo-700" />
@@ -175,9 +177,9 @@ const Navbar = () => {
             <div className="pt-4 pb-3 border-t border-indigo-700">
               <Link href="/profile" className="flex items-center px-3">
                 <div className="h-9 w-9 rounded-full bg-indigo-200 flex items-center justify-center overflow-hidden">
-                  {session.user?.imageUrl ? (
+                  {session.user?.image ? (
                     <Image
-                      src={session.user.imageUrl}
+                      src={session.user.image}
                       alt="Profile"
                       className="h-full w-full object-cover"
                       width={36}

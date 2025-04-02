@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { Session } from "next-auth";
+
+interface AuthSession extends Session {
+  user: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+}
 
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as AuthSession | null;
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -17,7 +27,7 @@ export async function GET(
   }
 
   try {
-    const { id } = params;
+    const { id } = context.params;
 
     const meal = await prisma.meal.findUnique({
       where: { id },
@@ -45,10 +55,10 @@ export async function GET(
 }
 
 export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as AuthSession | null;
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -58,7 +68,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = params;
+    const { id } = context.params;
 
     const existingMeal = await prisma.meal.findUnique({
       where: { id },
@@ -75,7 +85,7 @@ export async function PUT(
       );
     }
 
-    const formData = await req.formData();
+    const formData = await request.formData();
     const name = formData.get("name") as string;
     const date = formData.get("date") as string;
     const calories = formData.get("calories") as string;
@@ -120,10 +130,10 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as AuthSession | null;
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -133,7 +143,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params;
+    const { id } = context.params;
 
     const existingMeal = await prisma.meal.findUnique({
       where: { id },
