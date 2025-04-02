@@ -118,7 +118,7 @@ export default function Home() {
                     </h3>
                     <p className="mt-4 text-base text-indigo-100 text-center">
                       Track meals, calories, and macronutrients. Know exactly
-                      what you're putting in your body.
+                      what you&apos;re putting in your body.
                     </p>
                   </div>
                   <div className="relative h-48 mt-4">
@@ -198,9 +198,9 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-gray-600 italic">
-                "FitTrack has completely transformed my fitness journey. The
-                ability to track everything in one place has made staying
-                consistent so much easier."
+                &quot;FitTrack has completely transformed my fitness journey.
+                The ability to track everything in one place has made staying
+                consistent so much easier.&quot;
               </p>
             </div>
 
@@ -224,9 +224,9 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-gray-600 italic">
-                "The workout tracking feature is incredible. I can see my
+                &quot;The workout tracking feature is incredible. I can see my
                 progress over time and it keeps me motivated to push harder each
-                session."
+                session.&quot;
               </p>
             </div>
 
@@ -250,8 +250,9 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-gray-600 italic">
-                "The nutrition tracking has helped me understand my eating
-                habits and make better food choices. I've never felt healthier!"
+                &quot;The nutrition tracking has helped me understand my eating
+                habits and make better food choices. I&apos;ve never felt
+                healthier!&quot;
               </p>
             </div>
           </div>
