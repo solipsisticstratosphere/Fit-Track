@@ -13,10 +13,9 @@ interface AuthSession extends Session {
   };
 }
 
-export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+type RouteParams = { params: { id: string } };
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
   const session = (await getServerSession(authOptions)) as AuthSession | null;
 
   if (!session?.user?.id) {
@@ -27,7 +26,7 @@ export async function GET(
   }
 
   try {
-    const { id } = context.params;
+    const { id } = params;
 
     const meal = await prisma.meal.findUnique({
       where: { id },
@@ -54,10 +53,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   const session = (await getServerSession(authOptions)) as AuthSession | null;
 
   if (!session?.user?.id) {
@@ -68,7 +64,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = context.params;
+    const { id } = params;
 
     const existingMeal = await prisma.meal.findUnique({
       where: { id },
@@ -129,10 +125,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const session = (await getServerSession(authOptions)) as AuthSession | null;
 
   if (!session?.user?.id) {
@@ -143,7 +136,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = context.params;
+    const { id } = params;
 
     const existingMeal = await prisma.meal.findUnique({
       where: { id },
