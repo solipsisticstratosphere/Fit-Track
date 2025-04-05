@@ -2,25 +2,22 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import { format, parseISO } from "date-fns";
-import Modal from "@/components/Modal";
+import { format } from "date-fns";
+import SimpleModal from "@/components/SimpleModal";
 import { useSearchParams } from "next/navigation";
 import {
   Utensils,
-  Calendar,
   Plus,
-  Clock,
-  FileText,
   ImageIcon,
   Trash2,
-  Save,
   X,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import Image from "next/image";
 
 interface Meal {
   id: string;
@@ -34,7 +31,7 @@ interface Meal {
   notes: string | null;
 }
 
-export default function MealsPage() {
+function MealsContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const [meals, setMeals] = useState<Meal[]>([]);
@@ -45,7 +42,6 @@ export default function MealsPage() {
   const [isNewMeal, setIsNewMeal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // New meal form
   const [mealName, setMealName] = useState("");
   const [mealCalories, setMealCalories] = useState("");
   const [mealProtein, setMealProtein] = useState("");
@@ -55,21 +51,9 @@ export default function MealsPage() {
   const [mealImage, setMealImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (status === "authenticated" && session?.user?.id) {
-      fetchMeals();
-
-      
-      if (searchParams.get("new") === "true") {
-        openMealModal();
-      }
-    }
-  }, [status, session, selectedDate, searchParams]);
-
-  const fetchMeals = async () => {
+  const fetchMeals = useCallback(async () => {
     setLoading(true);
     try {
-      
       const dateString = format(selectedDate, "yyyy-MM-dd");
 
       const response = await fetch(`/api/meals?date=${dateString}`);
@@ -83,11 +67,17 @@ export default function MealsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate]);
 
-  const handleDateChange = (date: Date) => {
-    setSelectedDate(date);
-  };
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      fetchMeals();
+
+      if (searchParams.get("new") === "true") {
+        openMealModal();
+      }
+    }
+  }, [status, session, selectedDate, searchParams, fetchMeals]);
 
   const handlePreviousDay = () => {
     const newDate = new Date(selectedDate);
@@ -132,7 +122,6 @@ export default function MealsPage() {
       const file = e.target.files[0];
       setMealImage(file);
 
-     
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
@@ -251,31 +240,25 @@ export default function MealsPage() {
           <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200">
             <button
               onClick={handlePreviousDay}
-              className="p-2.5 text-gray-500 hover:text-indigo-600 focus:outline-none"
+              className="p-2 rounded-l-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
               aria-label="Previous day"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5 text-gray-600" />
             </button>
-            <input
-              type="date"
-              value={format(selectedDate, "yyyy-MM-dd")}
-              onChange={(e) => handleDateChange(new Date(e.target.value))}
-              className="block px-3 py-2 border-0 focus:outline-none focus:ring-0 sm:text-sm"
-            />
+            <div className="px-4 py-2 text-gray-700 font-medium border-l border-r border-gray-200">
+              {format(selectedDate, "EEEE, MMMM d, yyyy")}
+            </div>
             <button
               onClick={handleNextDay}
-              className="p-2.5 text-gray-500 hover:text-indigo-600 focus:outline-none"
+              className="p-2 rounded-r-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
               aria-label="Next day"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-5 w-5 text-gray-600" />
             </button>
           </div>
           <button
-            type="button"
             onClick={() => openMealModal()}
-            className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
-            aria-label="Add meal"
-            tabIndex={0}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <Plus className="h-5 w-5 mr-2" />
             Add Meal
@@ -283,397 +266,340 @@ export default function MealsPage() {
         </div>
       </div>
 
-      {/* Daily Nutrition Summary */}
-      <div className="bg-white shadow-md overflow-hidden rounded-xl mb-8 border border-gray-100">
-        <div className="px-6 py-5 bg-indigo-50 border-b border-indigo-100">
-          <h3 className="text-lg font-semibold text-indigo-800 flex items-center">
-            <Calendar className="mr-2 h-5 w-5 text-indigo-600" />
-            Daily Nutrition Summary
-          </h3>
-          <p className="mt-1 text-sm text-indigo-600 font-medium">
-            {format(selectedDate, "EEEE, MMMM d, yyyy")}
-          </p>
+      {/* Daily summary card */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8 border border-gray-100">
+        <div className="px-6 py-5 bg-gradient-to-r from-indigo-600 to-indigo-700 border-b border-indigo-800">
+          <h3 className="text-lg font-medium text-white">Daily Summary</h3>
         </div>
         <div className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-5 rounded-xl border border-indigo-200 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-indigo-800 uppercase tracking-wider">
-                  Calories
-                </h4>
-                <div className="bg-indigo-200 p-1.5 rounded-full">
-                  <Utensils className="h-4 w-4 text-indigo-700" />
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+              <div className="text-sm font-medium text-indigo-600 mb-1">
+                Total Calories
               </div>
-              <p className="text-2xl font-bold text-indigo-900">
-                {dailyTotals.calories}{" "}
-                <span className="text-sm font-medium">kcal</span>
-              </p>
+              <div className="text-2xl font-bold text-gray-800">
+                {dailyTotals.calories} kcal
+              </div>
             </div>
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl border border-purple-200 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-purple-800 uppercase tracking-wider">
-                  Protein
-                </h4>
-                <div className="bg-purple-200 p-1.5 rounded-full">
-                  <Utensils className="h-4 w-4 text-purple-700" />
-                </div>
+            <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+              <div className="text-sm font-medium text-green-600 mb-1">
+                Protein
               </div>
-              <p className="text-2xl font-bold text-purple-900">
-                {dailyTotals.protein}{" "}
-                <span className="text-sm font-medium">g</span>
-              </p>
+              <div className="text-2xl font-bold text-gray-800">
+                {dailyTotals.protein}g
+              </div>
             </div>
-            <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-5 rounded-xl border border-amber-200 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
-                  Carbs
-                </h4>
-                <div className="bg-amber-200 p-1.5 rounded-full">
-                  <Utensils className="h-4 w-4 text-amber-700" />
-                </div>
+            <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+              <div className="text-sm font-medium text-yellow-600 mb-1">
+                Carbs
               </div>
-              <p className="text-2xl font-bold text-amber-900">
-                {dailyTotals.carbs}{" "}
-                <span className="text-sm font-medium">g</span>
-              </p>
+              <div className="text-2xl font-bold text-gray-800">
+                {dailyTotals.carbs}g
+              </div>
             </div>
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-5 rounded-xl border border-emerald-200 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
-                  Fat
-                </h4>
-                <div className="bg-emerald-200 p-1.5 rounded-full">
-                  <Utensils className="h-4 w-4 text-emerald-700" />
-                </div>
+            <div className="p-4 bg-red-50 rounded-lg border border-red-100">
+              <div className="text-sm font-medium text-red-600 mb-1">Fat</div>
+              <div className="text-2xl font-bold text-gray-800">
+                {dailyTotals.fat}g
               </div>
-              <p className="text-2xl font-bold text-emerald-900">
-                {dailyTotals.fat} <span className="text-sm font-medium">g</span>
-              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Meals List */}
-      <div className="bg-white shadow-md overflow-hidden rounded-xl border border-gray-100">
-        <div className="px-6 py-5 bg-indigo-50 border-b border-indigo-100">
-          <h3 className="text-lg font-semibold text-indigo-800 flex items-center">
-            <Utensils className="mr-2 h-5 w-5 text-indigo-600" />
-            Your Meals
-          </h3>
-          <p className="mt-1 text-sm text-indigo-600">
-            Your meal entries for {format(selectedDate, "MMMM d, yyyy")}
-          </p>
+      {/* Meals list */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        <div className="px-6 py-5 bg-gradient-to-r from-indigo-500 to-indigo-600 border-b border-indigo-700">
+          <h3 className="text-lg font-medium text-white">Today&apos;s Meals</h3>
         </div>
 
-        <ul className="divide-y divide-gray-100">
-          {loading ? (
-            <li className="px-6 py-8 text-center">
-              <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-              <p className="text-gray-500">Loading meals...</p>
-            </li>
-          ) : meals.length > 0 ? (
-            meals.map((meal) => (
-              <li
-                key={meal.id}
-                className="p-5 hover:bg-indigo-50 cursor-pointer transition-colors duration-200"
-                onClick={() => openMealModal(meal)}
-              >
-                <div className="flex items-start">
-                  {meal.imageUrl ? (
-                    <div className="flex-shrink-0 mr-4">
-                      <img
-                        src={meal.imageUrl || "/placeholder.svg"}
-                        alt={meal.name}
-                        className="h-20 w-20 object-cover rounded-lg shadow-sm"
-                      />
+        {loading ? (
+          <div className="p-6 text-center">
+            <div className="w-10 h-10 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+            <p className="text-indigo-600">Loading meals...</p>
+          </div>
+        ) : meals.length === 0 ? (
+          <div className="p-12 text-center">
+            <Utensils className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No meals logged
+            </h3>
+            <p className="text-gray-500 max-w-sm mx-auto mb-6">
+              You haven&apos;t logged any meals for this day yet. Click the
+              button below to add your first meal.
+            </p>
+            <button
+              onClick={() => openMealModal()}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Add a Meal
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-hidden">
+            <ul className="divide-y divide-gray-200">
+              {meals.map((meal) => (
+                <li
+                  key={meal.id}
+                  onClick={() => openMealModal(meal)}
+                  className="hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <div className="px-6 py-4 flex items-center">
+                    <div className="flex-shrink-0 h-14 w-14 bg-gray-100 rounded-lg overflow-hidden mr-4">
+                      {meal.imageUrl ? (
+                        <Image
+                          src={meal.imageUrl}
+                          alt={meal.name}
+                          width={56}
+                          height={56}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center">
+                          <Utensils className="h-6 w-6 text-gray-400" />
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="flex-shrink-0 mr-4 h-20 w-20 bg-indigo-100 rounded-lg flex items-center justify-center">
-                      <Utensils className="h-8 w-8 text-indigo-400" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-lg font-medium text-indigo-700">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-lg font-medium text-gray-900 truncate">
                         {meal.name}
                       </p>
-                      <p className="text-sm text-gray-500 flex items-center">
-                        <Clock className="h-4 w-4 mr-1.5 text-gray-400" />
-                        {format(parseISO(meal.date), "h:mm a")}
-                      </p>
+                      <div className="flex items-center text-sm text-gray-500 mt-1">
+                        {meal.calories !== null && (
+                          <span className="mr-3">{meal.calories} kcal</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {meal.calories !== null && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                          {meal.calories} kcal
-                        </span>
-                      )}
-                      {meal.protein !== null && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                          {meal.protein}g protein
-                        </span>
-                      )}
-                      {meal.carbs !== null && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                          {meal.carbs}g carbs
-                        </span>
-                      )}
-                      {meal.fat !== null && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                          {meal.fat}g fat
-                        </span>
-                      )}
+                    <div className="flex-shrink-0">
+                      <div className="flex space-x-4">
+                        <div
+                          className="text-xs flex flex-col items-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteMeal(meal.id);
+                          }}
+                        >
+                          <button
+                            className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50"
+                            aria-label="Delete meal"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    {meal.notes && (
-                      <p className="mt-2 text-sm text-gray-600 line-clamp-1 flex items-center">
-                        <FileText className="h-4 w-4 mr-1.5 text-gray-400" />
-                        {meal.notes}
-                      </p>
-                    )}
                   </div>
-                </div>
-              </li>
-            ))
-          ) : (
-            <li className="px-6 py-12 text-center">
-              <div className="max-w-md mx-auto">
-                <div className="bg-indigo-100 rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto">
-                  <Utensils className="h-8 w-8 text-indigo-600" />
-                </div>
-                <h3 className="mt-4 text-xl font-medium text-gray-900">
-                  No meals recorded
-                </h3>
-                <p className="mt-2 text-gray-500">
-                  Get started by adding your first meal for this day. Track your
-                  calories, protein, carbs, and fat.
-                </p>
-                <div className="mt-6">
-                  <button
-                    type="button"
-                    onClick={() => openMealModal()}
-                    className="inline-flex items-center px-5 py-3 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
-                    aria-label="Add meal"
-                    tabIndex={0}
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Add Meal
-                  </button>
-                </div>
-              </div>
-            </li>
-          )}
-        </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Meal Modal */}
       {showModal && (
-        <Modal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          title={isNewMeal ? "Add Meal" : "Edit Meal"}
-          size="2xl"
-        >
-          <form onSubmit={handleSubmitMeal} className="space-y-5">
-            <div>
-              <label
-                htmlFor="meal-name"
-                className="block text-sm font-medium text-gray-700 mb-1"
+        <SimpleModal onClose={() => setShowModal(false)}>
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                {isNewMeal ? "Add New Meal" : "Edit Meal"}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-500"
               >
-                Meal Name
-              </label>
-              <input
-                type="text"
-                id="meal-name"
-                placeholder="Enter meal name"
-                className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                value={mealName}
-                onChange={(e) => setMealName(e.target.value)}
-                required
-              />
+                <span className="sr-only">Close</span>
+                <X className="h-6 w-6" />
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label
-                  htmlFor="calories"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Calories (kcal)
-                </label>
-                <input
-                  type="number"
-                  id="calories"
-                  placeholder="Calories"
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={mealCalories}
-                  onChange={(e) => setMealCalories(e.target.value)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="protein"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Protein (g)
-                </label>
-                <input
-                  type="number"
-                  id="protein"
-                  placeholder="Protein"
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={mealProtein}
-                  onChange={(e) => setMealProtein(e.target.value)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="carbs"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Carbs (g)
-                </label>
-                <input
-                  type="number"
-                  id="carbs"
-                  placeholder="Carbohydrates"
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={mealCarbs}
-                  onChange={(e) => setMealCarbs(e.target.value)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="fat"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Fat (g)
-                </label>
-                <input
-                  type="number"
-                  id="fat"
-                  placeholder="Fat"
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={mealFat}
-                  onChange={(e) => setMealFat(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="meal-notes"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Notes
-              </label>
-              <textarea
-                id="meal-notes"
-                rows={3}
-                placeholder="Optional notes about this meal"
-                className="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                value={mealNotes}
-                onChange={(e) => setMealNotes(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Meal Image
-              </label>
-              <div className="mt-1 flex items-center space-x-5">
-                {imagePreview ? (
-                  <div className="relative group">
-                    <img
-                      src={imagePreview || "/placeholder.svg"}
-                      alt="Meal preview"
-                      className="h-24 w-24 object-cover rounded-lg shadow-sm border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setImagePreview(null);
-                        setMealImage(null);
-                      }}
-                      className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      aria-label="Remove image"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="h-24 w-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
-                    <ImageIcon className="h-8 w-8 text-gray-400" />
-                  </div>
-                )}
-                <div className="flex-1">
+            <form onSubmit={handleSubmitMeal}>
+              <div className="space-y-4">
+                <div>
                   <label
-                    htmlFor="meal-image"
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
+                    htmlFor="mealName"
+                    className="block text-sm font-medium text-gray-700"
                   >
-                    <ImageIcon className="h-4 w-4 mr-2" />
-                    {imagePreview ? "Change Image" : "Upload Image"}
+                    Meal Name
                   </label>
                   <input
-                    id="meal-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="sr-only"
+                    type="text"
+                    id="mealName"
+                    value={mealName}
+                    onChange={(e) => setMealName(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    placeholder="Enter meal name"
+                    required
                   />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Upload a photo of your meal (optional)
-                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="mealCalories"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Calories (kcal)
+                    </label>
+                    <input
+                      type="number"
+                      id="mealCalories"
+                      value={mealCalories}
+                      onChange={(e) => setMealCalories(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="mealProtein"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Protein (g)
+                    </label>
+                    <input
+                      type="number"
+                      id="mealProtein"
+                      value={mealProtein}
+                      onChange={(e) => setMealProtein(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="mealCarbs"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Carbs (g)
+                    </label>
+                    <input
+                      type="number"
+                      id="mealCarbs"
+                      value={mealCarbs}
+                      onChange={(e) => setMealCarbs(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="mealFat"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Fat (g)
+                    </label>
+                    <input
+                      type="number"
+                      id="mealFat"
+                      value={mealFat}
+                      onChange={(e) => setMealFat(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="mealNotes"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Notes
+                  </label>
+                  <textarea
+                    id="mealNotes"
+                    value={mealNotes}
+                    onChange={(e) => setMealNotes(e.target.value)}
+                    rows={3}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    placeholder="Add any notes about this meal"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Meal Image
+                  </label>
+                  <div className="mt-1 flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className="h-16 w-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+                        {imagePreview ? (
+                          <img
+                            src={imagePreview}
+                            alt="Meal preview"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center">
+                            <ImageIcon className="h-8 w-8 text-gray-300" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <label
+                      htmlFor="meal-image-upload"
+                      className="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer"
+                    >
+                      Change
+                      <input
+                        id="meal-image-upload"
+                        name="meal-image-upload"
+                        type="file"
+                        className="sr-only"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex justify-end space-x-3 pt-5 border-t border-gray-200 mt-6">
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                className="inline-flex items-center px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
-                aria-label="Cancel adding meal"
-                tabIndex={0}
-              >
-                Cancel
-              </button>
-              {!isNewMeal && selectedMeal && (
+              <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !mealName}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 disabled:bg-indigo-400 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
+                </button>
                 <button
                   type="button"
-                  onClick={() => handleDeleteMeal(selectedMeal.id)}
-                  className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-                  aria-label="Delete meal"
-                  tabIndex={0}
+                  onClick={() => setShowModal(false)}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
+                  Cancel
                 </button>
-              )}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
-                aria-label={isNewMeal ? "Add meal" : "Save changes"}
-                tabIndex={0}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    {isNewMeal ? "Adding..." : "Saving..."}
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    {isNewMeal ? "Add Meal" : "Save Changes"}
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </Modal>
+              </div>
+            </form>
+          </div>
+        </SimpleModal>
       )}
     </div>
+  );
+}
+
+export default function MealsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-lg text-indigo-700">Loading meals...</p>
+          </div>
+        </div>
+      }
+    >
+      <MealsContent />
+    </Suspense>
   );
 }

@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { Session } from "next-auth";
+import { getTypedServerSession } from "@/lib/session";
 
-interface AuthSession extends Session {
-  user: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  };
-}
-
-type RouteParams = { params: { id: string } };
-
-export async function GET(request: NextRequest, { params }: RouteParams) {
-  const session = (await getServerSession(authOptions)) as AuthSession | null;
-
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getTypedServerSession();
   if (!session?.user?.id) {
     return NextResponse.json(
       { error: "You must be logged in to access this resource" },
@@ -53,9 +42,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
-  const session = (await getServerSession(authOptions)) as AuthSession | null;
-
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getTypedServerSession();
   if (!session?.user?.id) {
     return NextResponse.json(
       { error: "You must be logged in to access this resource" },
@@ -95,9 +86,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
-    // TODO:  process image upload
+    // TODO: process image upload
     let imageUrl = existingMeal.imageUrl;
     if (image) {
+      // Replace with actual image upload logic
       imageUrl = "/placeholder-meal.jpg";
     }
 
@@ -125,9 +117,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const session = (await getServerSession(authOptions)) as AuthSession | null;
-
+// DELETE handler
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getTypedServerSession();
   if (!session?.user?.id) {
     return NextResponse.json(
       { error: "You must be logged in to access this resource" },
@@ -152,6 +147,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         { status: 403 }
       );
     }
+
+    // TODO: Delete associated image if stored externally
 
     await prisma.meal.delete({
       where: { id },

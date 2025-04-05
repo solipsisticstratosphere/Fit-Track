@@ -19,7 +19,6 @@ import {
 } from "chart.js";
 import { format, parseISO, subMonths } from "date-fns";
 import Modal from "@/components/Modal";
-import { useSearchParams } from "next/navigation";
 import {
   Scale,
   TrendingDown,
@@ -59,7 +58,6 @@ interface Weight {
 
 export default function WeightPage() {
   const { data: session, status } = useSession();
-  const searchParams = useSearchParams();
   const [weights, setWeights] = useState<Weight[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState("3months");
@@ -138,14 +136,10 @@ export default function WeightPage() {
   }, [weights]);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.id) {
+    if (status === "authenticated" && session?.user && "id" in session.user) {
       fetchWeights();
-
-      if (searchParams.get("new") === "true") {
-        handleAddWeight();
-      }
     }
-  }, [status, session, timeframe, searchParams]);
+  }, [status, session, timeframe]);
 
   const fetchWeights = async () => {
     setLoading(true);
@@ -368,7 +362,7 @@ export default function WeightPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 ">
       <div className="md:flex md:items-center md:justify-between mb-8">
         <div className="flex-1 min-w-0">
-          <h2 className="text-3xl font-bold leading-7 text-gray-900 sm:text-4xl sm:truncate flex items-center">
+          <h2 className="text-3xl font-bold leading-7 text-gray-900 sm:text-4xl sm:truncate flex items-center h-20 ">
             <Scale className="mr-3 h-8 w-8 text-indigo-600" />
             Weight Tracking
           </h2>

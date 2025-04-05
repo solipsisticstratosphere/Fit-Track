@@ -1,17 +1,14 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getTypedServerSession } from "@/lib/session";
 
-// GET single workout by ID
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getTypedServerSession();
 
-    // Check authentication
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -19,7 +16,7 @@ export async function GET(
     const workout = await prisma.workout.findUnique({
       where: {
         id: params.id,
-        userId: session.user.id, // Ensure user can only access their own workouts
+        userId: session.user.id,
       },
       include: {
         exercises: true,
@@ -40,24 +37,21 @@ export async function GET(
   }
 }
 
-// PATCH - Update workout
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getTypedServerSession();
 
-    // Check authentication
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the workout to verify ownership
     const existingWorkout = await prisma.workout.findUnique({
       where: {
         id: params.id,
-        userId: session.user.id, // Ensure user can only update their own workouts
+        userId: session.user.id,
       },
       include: {
         exercises: true,
@@ -68,11 +62,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Workout not found" }, { status: 404 });
     }
 
-    // Parse the request body
     const body = await request.json();
     const { name, date, duration, notes, exercises } = body;
 
-    // Validate input
     if (!name || !date) {
       return NextResponse.json(
         { error: "Name and date are required" },
@@ -80,9 +72,7 @@ export async function PATCH(
       );
     }
 
-    // Update workout in a transaction to handle exercise updates
     const result = await prisma.$transaction(async (tx) => {
-      // Update the workout
       const updatedWorkout = await tx.workout.update({
         where: {
           id: params.id,
@@ -95,16 +85,13 @@ export async function PATCH(
         },
       });
 
-      // Get existing exercise IDs to identify deleted exercises
       const existingExerciseIds = existingWorkout.exercises.map((ex) => ex.id);
       const newExerciseIds = exercises.map((ex: { id: string }) => ex.id);
 
-      // Identify exercises to delete (existed before but not in new set)
       const exercisesToDelete = existingExerciseIds.filter(
         (id) => !newExerciseIds.includes(id)
       );
 
-      // Delete removed exercises
       if (exercisesToDelete.length > 0) {
         await tx.exercise.deleteMany({
           where: {
@@ -115,15 +102,12 @@ export async function PATCH(
         });
       }
 
-      // Update or create exercises
       for (const exercise of exercises) {
         const { id, name, sets, reps, weight, notes } = exercise;
 
-        // Check if this is an existing exercise (has a valid UUID)
         const isExisting = existingExerciseIds.includes(id);
 
         if (isExisting) {
-          // Update existing exercise
           await tx.exercise.update({
             where: {
               id,
@@ -138,7 +122,6 @@ export async function PATCH(
             },
           });
         } else {
-          // Create new exercise
           await tx.exercise.create({
             data: {
               id,
@@ -166,20 +149,17 @@ export async function PATCH(
   }
 }
 
-// DELETE - Delete workout
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getTypedServerSession();
 
-    // Check authentication
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the workout to verify ownership
     const workout = await prisma.workout.findUnique({
       where: {
         id: params.id,
@@ -191,7 +171,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Workout not found" }, { status: 404 });
     }
 
-    // Delete the workout (exercises will be cascade deleted due to relationship in schema)
     await prisma.workout.delete({
       where: {
         id: params.id,

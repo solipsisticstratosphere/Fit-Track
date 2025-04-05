@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getTypedServerSession } from "@/lib/session";
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getTypedServerSession();
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -54,7 +53,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getTypedServerSession();
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -93,7 +92,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getTypedServerSession();
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -153,7 +152,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getTypedServerSession();
 
   if (!session?.user?.id) {
     return NextResponse.json(

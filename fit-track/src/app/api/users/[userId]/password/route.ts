@@ -3,13 +3,14 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { compare, hash } from "bcrypt";
+import type { Session } from "next-auth";
 
 export async function PUT(
   request: Request,
   { params }: { params: { userId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = (await getServerSession(authOptions)) as Session;
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

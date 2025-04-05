@@ -1,20 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { Session } from "next-auth";
-
-interface AuthSession extends Session {
-  user: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  };
-}
+import { getTypedServerSession } from "@/lib/session";
 
 export async function GET(req: NextRequest) {
-  const session = (await getServerSession(authOptions)) as AuthSession | null;
+  const session = await getTypedServerSession();
 
   if (!session?.user?.id) {
     return NextResponse.json(

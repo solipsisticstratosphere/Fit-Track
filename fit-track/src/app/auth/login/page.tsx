@@ -6,7 +6,6 @@ export const metadata: Metadata = {
   description: "Sign in to your FitTrack account",
 };
 
-// This wrapper component handles the client-side functionality
 import ClientWrapper from "./ClientWrapper";
 
 export default function LoginPage() {

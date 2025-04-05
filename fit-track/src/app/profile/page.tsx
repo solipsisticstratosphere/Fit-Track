@@ -153,7 +153,7 @@ export default function ProfilePage() {
       await update({
         ...session,
         user: {
-          ...session?.user,
+          ...session.user,
           name: formData.name,
           image: imageUrl,
         },

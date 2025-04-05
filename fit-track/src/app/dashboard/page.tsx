@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
 import { Line } from "react-chartjs-2";
@@ -26,7 +26,6 @@ import {
   Utensils,
 } from "lucide-react";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -87,18 +86,8 @@ export default function DashboardPage() {
   const [recentWorkouts, setRecentWorkouts] = useState<Workout[]>([]);
   const [recentMeals, setRecentMeals] = useState<Meal[]>([]);
 
-  useEffect(() => {
-    if (status === "authenticated" && session?.user?.id) {
-      fetchWeightData();
-      fetchWorkoutStats();
-      fetchRecentWorkouts();
-      fetchRecentMeals();
-    }
-  }, [status, session, timeframe]);
-
-  const fetchWeightData = async () => {
+  const fetchWeightData = useCallback(async () => {
     try {
-      // Calculate date range based on timeframe
       const now = new Date();
       let startDate;
 
@@ -143,9 +132,9 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error fetching weight data:", error);
     }
-  };
+  }, [timeframe]);
 
-  const fetchWorkoutStats = async () => {
+  const fetchWorkoutStats = useCallback(async () => {
     try {
       const now = new Date();
       let startDate;
@@ -170,9 +159,9 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error fetching workout stats:", error);
     }
-  };
+  }, [timeframe]);
 
-  const fetchRecentWorkouts = async () => {
+  const fetchRecentWorkouts = useCallback(async () => {
     try {
       const response = await fetch("/api/workouts?limit=3");
       const data = await response.json();
@@ -183,9 +172,9 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error fetching recent workouts:", error);
     }
-  };
+  }, []);
 
-  const fetchRecentMeals = async () => {
+  const fetchRecentMeals = useCallback(async () => {
     try {
       const response = await fetch("/api/meals?limit=3");
       const data = await response.json();
@@ -196,7 +185,23 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error fetching recent meals:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      fetchWeightData();
+      fetchWorkoutStats();
+      fetchRecentWorkouts();
+      fetchRecentMeals();
+    }
+  }, [
+    status,
+    session,
+    fetchWeightData,
+    fetchWorkoutStats,
+    fetchRecentWorkouts,
+    fetchRecentMeals,
+  ]);
 
   const navigateToWorkoutsWithModal = () => {
     router.push("/workouts?new=true");
@@ -365,7 +370,6 @@ export default function DashboardPage() {
 
       {/* Weekly Stats and Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        {/* Weekly Stats */}
         <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
           <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
             <Dumbbell className="mr-2 text-indigo-500 h-5 w-5" />

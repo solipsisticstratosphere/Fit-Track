@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { redirect, useSearchParams } from "next/navigation";
 import { format, startOfWeek, addDays, parseISO, isSameDay } from "date-fns";
@@ -49,7 +49,7 @@ type ExerciseFormField = {
   notes: string;
 };
 
-export default function WorkoutsPage() {
+function WorkoutsContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -60,7 +60,6 @@ export default function WorkoutsPage() {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
-  // New workout modal state
   const [showNewWorkoutModal, setShowNewWorkoutModal] = useState(false);
   const [workoutName, setWorkoutName] = useState("");
   const [workoutDate, setWorkoutDate] = useState(new Date());
@@ -87,7 +86,6 @@ export default function WorkoutsPage() {
     },
   ]);
 
-  // Get calendar days for current week
   const startDate = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const calendarDays = Array.from({ length: 7 }).map((_, i) =>
     addDays(startDate, i)
@@ -99,7 +97,6 @@ export default function WorkoutsPage() {
     }
   }, [status, session, selectedDate, filterName]);
 
-  // Check if URL has new=true parameter to open the workout modal
   useEffect(() => {
     if (searchParams.get("new") === "true") {
       openNewWorkoutModal();
@@ -109,7 +106,6 @@ export default function WorkoutsPage() {
   const fetchWorkouts = async () => {
     setLoading(true);
     try {
-      // Create a date range for the current week
       const startOfWeekFormatted = format(startDate, "yyyy-MM-dd");
       const endOfWeekFormatted = format(addDays(startDate, 6), "yyyy-MM-dd");
 
@@ -140,7 +136,6 @@ export default function WorkoutsPage() {
   };
 
   const handleDateClick = (date: Date) => {
-    // Open the new workout modal with the selected date
     setWorkoutDate(date);
     setShowNewWorkoutModal(true);
   };
@@ -158,7 +153,6 @@ export default function WorkoutsPage() {
       });
 
       if (response.ok) {
-        // Close modal and refresh workouts
         setShowModal(false);
         fetchWorkouts();
       }
@@ -174,7 +168,6 @@ export default function WorkoutsPage() {
       });
 
       if (response.ok) {
-        // Close modal and refresh workouts
         setShowModal(false);
         fetchWorkouts();
       }
@@ -185,7 +178,7 @@ export default function WorkoutsPage() {
 
   const handleDateChange = (date: Date) => {
     setSelectedDate(date);
-    // Fetch workouts for the new week when date changes
+
     fetchWorkouts();
   };
 
@@ -959,5 +952,22 @@ export default function WorkoutsPage() {
         </Modal>
       )}
     </div>
+  );
+}
+
+export default function WorkoutsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-lg text-indigo-700">Loading workouts...</p>
+          </div>
+        </div>
+      }
+    >
+      <WorkoutsContent />
+    </Suspense>
   );
 }

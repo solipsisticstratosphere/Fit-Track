@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { Exercise } from "@prisma/client";
+import { getTypedServerSession } from "@/lib/session";
 
-// GET /api/workouts - Get workouts with optional filtering
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getTypedServerSession();
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -23,7 +21,19 @@ export async function GET(req: NextRequest) {
   const limit = limitParam ? parseInt(limitParam) : undefined;
 
   try {
-    const whereClause: { userId: string; date?: { gte?: Date; lte?: Date } } = {
+    type WhereClause = {
+      userId: string;
+      date?: {
+        gte?: Date;
+        lte?: Date;
+      };
+      name?: {
+        contains: string;
+        mode: "insensitive";
+      };
+    };
+
+    const whereClause: WhereClause = {
       userId: session.user.id,
     };
 
@@ -70,7 +80,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getTypedServerSession();
 
   if (!session?.user?.id) {
     return NextResponse.json(
