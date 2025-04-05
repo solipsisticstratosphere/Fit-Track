@@ -428,7 +428,7 @@ function MealsContent() {
                     id="mealName"
                     value={mealName}
                     onChange={(e) => setMealName(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                     placeholder="Enter meal name"
                     required
                   />
@@ -447,7 +447,7 @@ function MealsContent() {
                       id="mealCalories"
                       value={mealCalories}
                       onChange={(e) => setMealCalories(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                       placeholder="0"
                     />
                   </div>
@@ -463,7 +463,7 @@ function MealsContent() {
                       id="mealProtein"
                       value={mealProtein}
                       onChange={(e) => setMealProtein(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                       placeholder="0"
                     />
                   </div>
@@ -479,7 +479,7 @@ function MealsContent() {
                       id="mealCarbs"
                       value={mealCarbs}
                       onChange={(e) => setMealCarbs(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                       placeholder="0"
                     />
                   </div>
@@ -495,7 +495,7 @@ function MealsContent() {
                       id="mealFat"
                       value={mealFat}
                       onChange={(e) => setMealFat(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                       placeholder="0"
                     />
                   </div>
@@ -513,7 +513,7 @@ function MealsContent() {
                     value={mealNotes}
                     onChange={(e) => setMealNotes(e.target.value)}
                     rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2"
                     placeholder="Add any notes about this meal"
                   />
                 </div>
