@@ -7,7 +7,7 @@ import AuthProvider from "@/components/auth/AuthProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "FitTrack - Track Your Fitness Journey",
+  title: "FitTrack",
   description:
     "FitTrack helps you log workouts, meals, and weight to achieve your fitness goals.",
 };

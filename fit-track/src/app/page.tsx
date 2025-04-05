@@ -1,6 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Dumbbell, Utensils, LineChart } from "lucide-react";
+import {
+  ArrowRight,
+  Dumbbell,
+  Utensils,
+  LineChart,
+  DumbbellIcon,
+} from "lucide-react";
 
 export default function Home() {
   return (
@@ -42,7 +48,7 @@ export default function Home() {
             <div className="mt-12 lg:mt-0 lg:w-1/2">
               <div className="relative mx-auto w-full max-w-md lg:max-w-none">
                 <Image
-                  src="/placeholder.svg?height=600&width=600"
+                  src="/hero.jpg"
                   alt="Fitness tracking app dashboard"
                   width={600}
                   height={600}
@@ -81,7 +87,7 @@ export default function Home() {
                   <div className="relative p-6">
                     <div className="flex justify-center">
                       <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                        <Dumbbell className="h-8 w-8 text-white" />
+                        <Dumbbell className="h-8 w-8 text-black" />
                       </div>
                     </div>
                     <h3 className="mt-8 text-xl font-bold text-white text-center">
@@ -91,14 +97,6 @@ export default function Home() {
                       Log exercises, sets, reps, and weights. Monitor your
                       progress and see how you improve over time.
                     </p>
-                  </div>
-                  <div className="relative h-48 mt-4">
-                    <Image
-                      src="/placeholder.svg?height=400&width=600"
-                      alt="Workout tracking interface"
-                      fill
-                      className="object-cover"
-                    />
                   </div>
                 </div>
               </div>
@@ -110,7 +108,7 @@ export default function Home() {
                   <div className="relative p-6">
                     <div className="flex justify-center">
                       <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                        <Utensils className="h-8 w-8 text-white" />
+                        <Utensils className="h-8 w-8 text-black" />
                       </div>
                     </div>
                     <h3 className="mt-8 text-xl font-bold text-white text-center">
@@ -120,14 +118,6 @@ export default function Home() {
                       Track meals, calories, and macronutrients. Know exactly
                       what you&apos;re putting in your body.
                     </p>
-                  </div>
-                  <div className="relative h-48 mt-4">
-                    <Image
-                      src="/placeholder.svg?height=400&width=600"
-                      alt="Nutrition tracking interface"
-                      fill
-                      className="object-cover"
-                    />
                   </div>
                 </div>
               </div>
@@ -139,7 +129,7 @@ export default function Home() {
                   <div className="relative p-6">
                     <div className="flex justify-center">
                       <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm">
-                        <LineChart className="h-8 w-8 text-white" />
+                        <LineChart className="h-8 w-8 text-black" />
                       </div>
                     </div>
                     <h3 className="mt-8 text-xl font-bold text-white text-center">
@@ -149,14 +139,6 @@ export default function Home() {
                       Log your weight regularly and visualize your weight loss
                       or gain journey with detailed graphs.
                     </p>
-                  </div>
-                  <div className="relative h-48 mt-4">
-                    <Image
-                      src="/placeholder.svg?height=400&width=600"
-                      alt="Weight tracking graphs"
-                      fill
-                      className="object-cover"
-                    />
                   </div>
                 </div>
               </div>
@@ -183,7 +165,7 @@ export default function Home() {
               <div className="flex items-center mb-6">
                 <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
                   <Image
-                    src="/placeholder.svg?height=100&width=100"
+                    src="/photo2.jpg"
                     alt="User avatar"
                     width={48}
                     height={48}
@@ -209,7 +191,7 @@ export default function Home() {
               <div className="flex items-center mb-6">
                 <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
                   <Image
-                    src="/placeholder.svg?height=100&width=100"
+                    src="/photo1.jpg"
                     alt="User avatar"
                     width={48}
                     height={48}
@@ -235,7 +217,7 @@ export default function Home() {
               <div className="flex items-center mb-6">
                 <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
                   <Image
-                    src="/placeholder.svg?height=100&width=100"
+                    src="/photo3.png"
                     alt="User avatar"
                     width={48}
                     height={48}
