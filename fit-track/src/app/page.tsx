@@ -1,12 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ArrowRight,
-  Dumbbell,
-  Utensils,
-  LineChart,
-  DumbbellIcon,
-} from "lucide-react";
+import { ArrowRight, Dumbbell, Utensils, LineChart } from "lucide-react";
 
 export default function Home() {
   return (
