@@ -169,7 +169,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[70vh] bg-gray-50">
+      <div className="flex items-center justify-center min-h-[70vh] ">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-lg text-indigo-700">Loading your profile...</p>
