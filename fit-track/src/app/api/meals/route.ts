@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getTypedServerSession } from "@/lib/session";
+import cloudinary from "@/lib/cloudinary";
 
 export async function GET(req: NextRequest) {
   const session = await getTypedServerSession();
@@ -93,28 +94,52 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // TODO:  process image upload to a storage service
-
     let imageUrl = null;
+    let cloudinaryPublicId = null;
+
     if (image) {
-      imageUrl = "/placeholder-meal.jpg";
+      const arrayBuffer = await image.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const base64Data = `data:${image.type};base64,${buffer.toString(
+        "base64"
+      )}`;
+
+      const uploadResult = await cloudinary.uploader.upload(base64Data, {
+        folder: "fit-track/meals",
+        public_id: `meal_${session.user.id}_${Date.now()}`,
+        overwrite: true,
+        resource_type: "image",
+      });
+
+      imageUrl = uploadResult.secure_url;
+      cloudinaryPublicId = uploadResult.public_id;
     }
 
+    const baseData = {
+      name,
+      date: new Date(date),
+      calories: calories ? parseInt(calories) : null,
+      protein: protein ? parseFloat(protein) : null,
+      carbs: carbs ? parseFloat(carbs) : null,
+      fat: fat ? parseFloat(fat) : null,
+      notes: notes || null,
+      imageUrl,
+      userId: session.user.id,
+    };
+
     const meal = await prisma.meal.create({
-      data: {
-        name,
-        date: new Date(date),
-        calories: calories ? parseInt(calories) : null,
-        protein: protein ? parseFloat(protein) : null,
-        carbs: carbs ? parseFloat(carbs) : null,
-        fat: fat ? parseFloat(fat) : null,
-        notes: notes || null,
-        imageUrl,
-        userId: session.user.id,
-      },
+      data: baseData,
     });
 
-    return NextResponse.json(meal, { status: 201 });
+    if (cloudinaryPublicId) {
+      await prisma.$executeRaw`UPDATE "Meal" SET "cloudinaryPublicId" = ${cloudinaryPublicId} WHERE id = ${meal.id}`;
+    }
+
+    const updatedMeal = await prisma.meal.findUnique({
+      where: { id: meal.id },
+    });
+
+    return NextResponse.json(updatedMeal, { status: 201 });
   } catch (error) {
     console.error("Error creating meal:", error);
     return NextResponse.json(

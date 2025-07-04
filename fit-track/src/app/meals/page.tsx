@@ -28,6 +28,7 @@ interface Meal {
   fat: number | null;
   date: string;
   imageUrl: string | null;
+  cloudinaryPublicId: string | null;
   notes: string | null;
 }
 
@@ -41,6 +42,8 @@ function MealsContent() {
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [isNewMeal, setIsNewMeal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [fullSizeImage, setFullSizeImage] = useState<string | null>(null);
 
   const [mealName, setMealName] = useState("");
   const [mealCalories, setMealCalories] = useState("");
@@ -89,6 +92,12 @@ function MealsContent() {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + 1);
     setSelectedDate(newDate);
+  };
+
+  const openFullSizeImage = (imageUrl: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening the meal edit modal
+    setFullSizeImage(imageUrl);
+    setShowImageModal(true);
   };
 
   const openMealModal = (meal?: Meal) => {
@@ -348,13 +357,20 @@ function MealsContent() {
                   <div className="px-6 py-4 flex items-center">
                     <div className="flex-shrink-0 h-14 w-14 bg-gray-100 rounded-lg overflow-hidden mr-4">
                       {meal.imageUrl ? (
-                        <Image
-                          src={meal.imageUrl}
-                          alt={meal.name}
-                          width={56}
-                          height={56}
-                          className="h-full w-full object-cover"
-                        />
+                        <div
+                          onClick={(e) => openFullSizeImage(meal.imageUrl!, e)}
+                          className="cursor-zoom-in"
+                        >
+                          <Image
+                            src={meal.imageUrl}
+                            alt={meal.name}
+                            width={56}
+                            height={56}
+                            className="h-full w-full object-cover"
+                            priority={false}
+                            unoptimized={false}
+                          />
+                        </div>
                       ) : (
                         <div className="h-full w-full flex items-center justify-center">
                           <Utensils className="h-6 w-6 text-gray-400" />
@@ -526,11 +542,31 @@ function MealsContent() {
                     <div className="flex-shrink-0">
                       <div className="h-16 w-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
                         {imagePreview ? (
-                          <img
-                            src={imagePreview}
-                            alt="Meal preview"
-                            className="h-full w-full object-cover"
-                          />
+                          <div
+                            onClick={(e) => openFullSizeImage(imagePreview, e)}
+                            className="cursor-zoom-in h-full w-full"
+                          >
+                            <img
+                              src={imagePreview}
+                              alt="Meal preview"
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : selectedMeal?.imageUrl ? (
+                          <div
+                            onClick={(e) =>
+                              openFullSizeImage(selectedMeal.imageUrl!, e)
+                            }
+                            className="cursor-zoom-in h-full w-full"
+                          >
+                            <Image
+                              src={selectedMeal.imageUrl}
+                              alt={selectedMeal.name}
+                              width={64}
+                              height={64}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
                         ) : (
                           <div className="h-full w-full flex items-center justify-center">
                             <ImageIcon className="h-8 w-8 text-gray-300" />
@@ -580,6 +616,31 @@ function MealsContent() {
                 </button>
               </div>
             </form>
+          </div>
+        </SimpleModal>
+      )}
+
+      {/* Full-size Image Modal */}
+      {showImageModal && fullSizeImage && (
+        <SimpleModal onClose={() => setShowImageModal(false)}>
+          <div className="p-2 relative">
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-2 right-2 bg-gray-800 bg-opacity-50 text-white rounded-full p-1 hover:bg-opacity-70 transition-all z-10"
+              aria-label="Close"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <div className="flex items-center justify-center max-h-[80vh]">
+              <Image
+                src={fullSizeImage}
+                alt="Meal image"
+                width={1000}
+                height={1000}
+                className="max-h-[80vh] w-auto object-contain"
+                unoptimized={false}
+              />
+            </div>
           </div>
         </SimpleModal>
       )}

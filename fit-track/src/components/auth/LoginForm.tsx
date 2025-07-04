@@ -57,36 +57,36 @@ const LoginForm = () => {
     }
   };
 
-  const handleTestAuth = async () => {
-    setIsLoading(true);
-    setError("");
+  // const handleTestAuth = async () => {
+  //   setIsLoading(true);
+  //   setError("");
 
-    try {
-      const response = await fetch("/api/debug/auth", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+  //   try {
+  //     const response = await fetch("/api/debug/auth", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ email, password }),
+  //     });
 
-      const data = await response.json();
-      console.log("Auth test result:", data);
+  //     const data = await response.json();
+  //     console.log("Auth test result:", data);
 
-      if (data.success) {
-        setError(
-          "Password is correct according to debug endpoint, but login still fails. This may be a NextAuth configuration issue."
-        );
-      } else {
-        setError(`Auth test failed: ${data.message || "Unknown error"}`);
-      }
-    } catch (err) {
-      console.error("Test auth error:", err);
-      setError("Test authentication failed");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     if (data.success) {
+  //       setError(
+  //         "Password is correct according to debug endpoint, but login still fails. This may be a NextAuth configuration issue."
+  //       );
+  //     } else {
+  //       setError(`Auth test failed: ${data.message || "Unknown error"}`);
+  //     }
+  //   } catch (err) {
+  //     console.error("Test auth error:", err);
+  //     setError("Test authentication failed");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
@@ -159,17 +159,7 @@ const LoginForm = () => {
         </div>
       </form>
 
-      {process.env.NODE_ENV === "development" && (
-        <div className="mt-4">
-          <button
-            onClick={handleTestAuth}
-            disabled={isLoading || !email || !password}
-            className="text-sm text-indigo-600 hover:text-indigo-500"
-          >
-            Test Authentication
-          </button>
-        </div>
-      )}
+      {process.env.NODE_ENV === "development" && <div className="mt-4"></div>}
 
       <div className="text-center">
         <p className="text-sm text-gray-600">
