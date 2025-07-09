@@ -7,22 +7,23 @@ import type { Session } from "next-auth";
 
 export async function GET(
   request: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId } = await params;
     const session = (await getServerSession(authOptions)) as Session;
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (session.user.id !== params.userId) {
+    if (session.user.id !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const user = await prisma.user.findUnique({
       where: {
-        id: params.userId,
+        id: userId,
       },
       select: {
         id: true,
@@ -30,6 +31,7 @@ export async function GET(
         email: true,
         imageUrl: true,
         createdAt: true,
+        cloudinaryPublicId: true,
       },
     });
 
@@ -49,16 +51,17 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId } = await params;
     const session = (await getServerSession(authOptions)) as Session;
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (session.user.id !== params.userId) {
+    if (session.user.id !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -96,7 +99,7 @@ export async function PATCH(
       try {
         const currentUser = await prisma.user.findUnique({
           where: {
-            id: params.userId,
+            id: userId,
           },
         });
 
@@ -129,7 +132,7 @@ export async function PATCH(
 
     const updatedUser = await prisma.user.update({
       where: {
-        id: params.userId,
+        id: userId,
       },
       data: updateData,
       select: {
@@ -158,16 +161,17 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId } = await params;
     const session = (await getServerSession(authOptions)) as Session;
 
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (session.user.id !== params.userId) {
+    if (session.user.id !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -183,7 +187,7 @@ export async function DELETE(
 
     const user = await prisma.user.findUnique({
       where: {
-        id: params.userId,
+        id: userId,
       },
       select: {
         hashedPassword: true,
@@ -205,19 +209,19 @@ export async function DELETE(
 
     await prisma.$transaction([
       prisma.workout.deleteMany({
-        where: { userId: params.userId },
+        where: { userId: userId },
       }),
 
       prisma.meal.deleteMany({
-        where: { userId: params.userId },
+        where: { userId: userId },
       }),
 
       prisma.weight.deleteMany({
-        where: { userId: params.userId },
+        where: { userId: userId },
       }),
 
       prisma.user.delete({
-        where: { id: params.userId },
+        where: { id: userId },
       }),
     ]);
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { showErrorToast } from "@/lib/toast";
 
 interface ErrorWithCause extends Error {
   cause?: string;
@@ -24,13 +25,13 @@ const RegisterForm = () => {
     setDetailedError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      showErrorToast("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+      showErrorToast("Password must be at least 6 characters long");
       setIsLoading(false);
       return;
     }
@@ -58,7 +59,7 @@ const RegisterForm = () => {
         err instanceof Error
           ? err.message
           : "Failed to register. Please try again.";
-      setError(errorMessage);
+      showErrorToast(errorMessage);
 
       if (err instanceof Error && (err as ErrorWithCause).cause) {
         setDetailedError((err as ErrorWithCause).cause || "");

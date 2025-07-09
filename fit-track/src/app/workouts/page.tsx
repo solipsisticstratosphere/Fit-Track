@@ -22,6 +22,7 @@ import {
   X,
   CheckCircle2,
 } from "lucide-react";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
 interface Exercise {
   id: string;
@@ -169,17 +170,23 @@ function WorkoutsContent() {
   };
 
   const handleDeleteWorkout = async (workoutId: string) => {
+    if (!confirm("Are you sure you want to delete this workout?")) {
+      return;
+    }
+
     try {
       const response = await fetch(`/api/workouts/${workoutId}`, {
         method: "DELETE",
       });
-
       if (response.ok) {
-        setShowModal(false);
+        showSuccessToast("Workout deleted successfully!");
         fetchWorkouts();
+      } else {
+        showErrorToast("Failed to delete workout.");
       }
     } catch (error) {
       console.error("Error deleting workout:", error);
+      showErrorToast("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -281,14 +288,15 @@ function WorkoutsContent() {
         setShowNewWorkoutModal(false);
         fetchWorkouts();
         setIsSubmitting(false);
+        showSuccessToast("Workout created successfully!");
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message || "Failed to create workout"}`);
+        showErrorToast(error.message || "Failed to create workout");
         setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Error creating workout:", error);
-      alert("Failed to create workout. Please try again.");
+      showErrorToast("Failed to create workout. Please try again.");
       setIsSubmitting(false);
     }
   };

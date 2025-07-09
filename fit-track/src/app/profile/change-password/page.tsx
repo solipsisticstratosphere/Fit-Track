@@ -5,15 +5,12 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
 export default function ChangePasswordPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "success" | "error";
-  } | null>(null);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,7 +28,6 @@ export default function ChangePasswordPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setMessage(null);
   };
 
   const toggleCurrentPasswordVisibility = () => {
@@ -44,28 +40,22 @@ export default function ChangePasswordPage() {
 
   const validateForm = () => {
     if (!formData.currentPassword) {
-      setMessage({ text: "Current password is required", type: "error" });
+      showErrorToast("Current password is required");
       return false;
     }
 
     if (!formData.newPassword) {
-      setMessage({ text: "New password is required", type: "error" });
+      showErrorToast("New password is required");
       return false;
     }
 
-    if (formData.newPassword.length < 8) {
-      setMessage({
-        text: "New password must be at least 8 characters long",
-        type: "error",
-      });
+    if (formData.newPassword.length < 6) {
+      showErrorToast("New password must be at least 6 characters long");
       return false;
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      setMessage({
-        text: "New password and confirmation do not match",
-        type: "error",
-      });
+      showErrorToast("New password and confirmation do not match");
       return false;
     }
 
@@ -79,7 +69,6 @@ export default function ChangePasswordPage() {
 
     try {
       setIsLoading(true);
-      setMessage(null);
 
       const response = await fetch(`/api/users/${session.user.id}/password`, {
         method: "PUT",
@@ -95,14 +84,11 @@ export default function ChangePasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage({
-          text: data.error || "Failed to change password",
-          type: "error",
-        });
+        showErrorToast(data.error || "Failed to change password");
         return;
       }
 
-      setMessage({ text: "Password changed successfully", type: "success" });
+      showSuccessToast("Password changed successfully");
       setFormData({
         currentPassword: "",
         newPassword: "",
@@ -114,10 +100,7 @@ export default function ChangePasswordPage() {
       }, 2000);
     } catch (error) {
       console.error("Error changing password:", error);
-      setMessage({
-        text: "An unexpected error occurred. Please try again.",
-        type: "error",
-      });
+      showErrorToast("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -160,18 +143,6 @@ export default function ChangePasswordPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {message && (
-            <div
-              className={`p-3 rounded-md ${
-                message.type === "error"
-                  ? "bg-red-50 text-red-700 border border-red-200"
-                  : "bg-green-50 text-green-700 border border-green-200"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-
           <div className="space-y-4">
             <div>
               <label

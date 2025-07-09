@@ -46,10 +46,10 @@ export default function ProfilePage() {
       return;
     }
 
-    if (status === "authenticated" && session?.user?.id) {
+    if (status === "authenticated" && session?.user?.id && !userProfile) {
       fetchUserProfile(session.user.id);
     }
-  }, [status, session, router]);
+  }, [status, session, router, userProfile]);
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -151,9 +151,7 @@ export default function ProfilePage() {
       if (!response.ok) throw new Error("Failed to update profile");
 
       await update({
-        ...session,
         user: {
-          ...session.user,
           name: formData.name,
           image: imageUrl,
         },

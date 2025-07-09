@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Image from "next/image";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
 interface Meal {
   id: string;
@@ -173,9 +174,15 @@ function MealsContent() {
       if (response.ok) {
         setShowModal(false);
         fetchMeals();
+        showSuccessToast(
+          isNewMeal ? "Meal added successfully!" : "Meal updated successfully!"
+        );
+      } else {
+        showErrorToast("Failed to save meal.");
       }
     } catch (error) {
       console.error("Error saving meal:", error);
+      showErrorToast("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -194,9 +201,13 @@ function MealsContent() {
       if (response.ok) {
         fetchMeals();
         if (showModal) setShowModal(false);
+        showSuccessToast("Meal deleted successfully!");
+      } else {
+        showErrorToast("Failed to delete meal.");
       }
     } catch (error) {
       console.error("Error deleting meal:", error);
+      showErrorToast("An unexpected error occurred. Please try again.");
     }
   };
 

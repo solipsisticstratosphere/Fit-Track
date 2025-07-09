@@ -36,6 +36,7 @@ import {
   ArrowDown,
   ArrowUp,
 } from "lucide-react";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 
 ChartJS.register(
   CategoryScale,
@@ -198,13 +199,14 @@ export default function WeightPage() {
       if (response.ok) {
         setShowWeightModal(false);
         fetchWeights();
+        showSuccessToast("Weight entry added successfully!");
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message || "Failed to add weight entry"}`);
+        showErrorToast(error.message || "Failed to add weight entry");
       }
     } catch (error) {
       console.error("Error adding weight entry:", error);
-      alert("Failed to add weight entry. Please try again.");
+      showErrorToast("Failed to add weight entry. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -233,9 +235,13 @@ export default function WeightPage() {
         setWeightNotes("");
         setEditingId(null);
         fetchWeights();
+        showSuccessToast("Weight entry updated successfully!");
+      } else {
+        showErrorToast("Failed to update weight entry.");
       }
     } catch (error) {
       console.error("Error updating weight:", error);
+      showErrorToast("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -253,9 +259,13 @@ export default function WeightPage() {
 
       if (response.ok) {
         fetchWeights();
+        showSuccessToast("Weight entry deleted successfully!");
+      } else {
+        showErrorToast("Failed to delete weight entry.");
       }
     } catch (error) {
       console.error("Error deleting weight:", error);
+      showErrorToast("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -314,12 +324,14 @@ export default function WeightPage() {
         setInlineWeight("");
         setInlineNotes("");
         fetchWeights();
+        showSuccessToast("Weight entry added successfully!");
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message || "Failed to add weight entry"}`);
+        showErrorToast(error.message || "Failed to add weight entry");
       }
     } catch (error) {
       console.error("Error adding weight entry:", error);
+      showErrorToast("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
